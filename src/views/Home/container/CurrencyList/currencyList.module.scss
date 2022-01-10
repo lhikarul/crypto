@@ -1,0 +1,13 @@
+.currencyList {
+  table {
+    tr {
+      &:hover {
+         background-color: #f8fafd;
+      }
+    }
+    th, td {
+      border-bottom: 1px solid #eff2f5;
+      padding: 10px;
+    }
+  }
+}
