@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import cx from 'classnames'
 
 import './csshake.css'
@@ -6,19 +6,19 @@ import style from '../Jigsaw/Jigsaw.module.scss'
 
 import getRandom from '../../utils/getRandom'
 
-const url = 'https://vd004-tiger-portal.dev.mppwr.com/static/media/15.9ecf49ba.jpg'
-
 enum JigsawStatus {
   LOADING = 0,
   READY = 1,
   MATCH = 2,
-  ERROR = 3
+  ERROR = 3,
+  HIDE = 4
 }
 
 interface JigsawImageClippedProp {
   clippedX: number
   clippedY: number
   curX: number
+  startX: number
   isMoving: boolean
   limitedX: number
 }
@@ -100,14 +100,22 @@ function getPosition (e: React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTM
   }
 }
 
-export default function Jigsaw (props: any) {
+interface JigsawProps {
+  imageUrl: string,
+  onReload: () => void,
+  onError: () => void,
+  onSuccess: () => void
+}
+
+export default function Jigsaw (props: JigsawProps) {
   const {imageUrl} = props
   const [jigsawData, setJigsawData] = useState<JigsawImageClippedProp>({
     clippedX: getRandom(JIGSAW_WIDTH / 2, JIGSAW_WIDTH - JIGSAW_SHAPE_SIZE),
     clippedY: getRandom(JIGSAW_SHAPE_SIZE, JIGSAW_HEIGHT - JIGSAW_SHAPE_SIZE),
     curX: 0,
     isMoving: false,
-    limitedX: 0
+    limitedX: 0,
+    startX: 0,
   })
   const [sliderStyle, setSliderStyle] = useState<string>()
 
@@ -121,6 +129,7 @@ export default function Jigsaw (props: any) {
       setJigsawData((val) => ({
         ...val,
         isMoving: true,
+        startX: x,
         limitedX: JIGSAW_WIDTH - JIGSAW_SHAPE_SIZE
       }))
     }
@@ -129,10 +138,11 @@ export default function Jigsaw (props: any) {
   const onMoving = (e: React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) => {
     if (jigsawData.isMoving) {
       const {x} = getPosition(e)
-      if (x >= jigsawData.limitedX || x <= 0) return
+      const distance = x - jigsawData.startX
+      if (distance > jigsawData.limitedX + 5 || distance < 0) return onMoveEnd()
       setJigsawData((val) => ({
         ...val,
-        curX: x
+        curX: distance
       }))
     }
   }
@@ -146,6 +156,9 @@ export default function Jigsaw (props: any) {
     if (jigsawData.curX >= jigsawData.clippedX - 0.5 && jigsawData.curX <= jigsawData.clippedX + 0.5) {
       setJigsawStatus(JigsawStatus.MATCH)
       setSliderStyle(style.verify_slider_success)
+      setTimeout(() => {
+        props.onSuccess()
+      }, 300);
     } else {
       setJigsawStatus(JigsawStatus.ERROR)
       setSliderStyle(style.verify_slider_error)
@@ -243,6 +256,9 @@ export default function Jigsaw (props: any) {
           onTouchStart={onMoveStart}
           onTouchMove={onMoving}
           onTouchEnd={onMoveEnd}
+          onMouseDown={onMoveStart}
+          onMouseMove={onMoving}
+          onMouseUp={onMoveEnd}
         >
           <canvas 
             ref={(el: HTMLCanvasElement) => jigsawImageClippedRef.current = el}
@@ -256,15 +272,18 @@ export default function Jigsaw (props: any) {
         onTouchStart={onMoveStart}
         onTouchMove={onMoving}
         onTouchEnd={onMoveEnd}
+        onMouseDown={onMoveStart}
+        onMouseMove={onMoving}
+        onMouseUp={onMoveEnd}
       >
         <div
-          className={"ml-[55px]"}
+          className={"ml-[55px] bg-[#2b3139]"}
         >
           滑動以完成拼圖
         </div>
         <div 
           className={cx(style.verify_slider_arrow, sliderStyle)}
-          style={{width: 44 + jigsawData?.curX + 'px'}}
+          style={{width: 46.5 + jigsawData?.curX + 'px'}}
         >
           <span className={'pr-[12px]'}>{"-->"}</span>
         </div>
