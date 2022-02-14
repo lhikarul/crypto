@@ -51,9 +51,9 @@ const CurrencyList = () => {
         <tbody>
           {
             cryptoList?.map((crypto: Currency, index: number) => (
-              <tr key={crypto.uuid} className='cursor-pointer'>
+              <tr key={crypto.uuid} className='cursor-pointer' onClick={() => navigate(`/currencies/${crypto.symbol}/${crypto.uuid}`)}>
                 <td>{index + 1}</td>
-                <td className="cursor-pointer" onClick={() => navigate(`/currencies/${crypto.symbol}/${crypto.uuid}`)}>
+                <td className="cursor-pointer">
                   <img className='w-[24px] h-[24px] mr-[5px] inline' src={crypto.iconUrl} />
                   <span>{crypto.name}</span> <span className="ml-[3px] text-[#808a9d]">{crypto.symbol}</span>
                 </td>
