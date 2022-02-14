@@ -14,7 +14,7 @@ export const binanceApi = createApi({
   baseQuery: fetchBaseQuery({baseUrl}),
   endpoints: (builder) => ({
     getKline: builder.query({
-      query: ({symbol, interval}) => createRequest(`/api/v3/klines?symbol=${symbol}&interval=${interval}`)
+      query: ({symbol, interval}) => createRequest(`/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=100`)
     })
   })
 })

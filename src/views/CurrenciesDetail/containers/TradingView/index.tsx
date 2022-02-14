@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import {scaleLinear, scaleBand, range, symbol} from "d3";
+import {scaleLinear, scaleBand, range} from "d3";
 
 import {useWebsocketContext} from '@/services/ws'
 
@@ -10,7 +10,7 @@ import CandleStick from '../../components/CandleStick'
 import Yaxis from '../../components/Yaxis'
 import Xaxis from '../../components/Xaxis'
 
-import {getKlineObj, getDomain} from '../../utils'
+import {getKlineObj, getDomain, downColor, upColor} from '../../utils'
 
 import {PriceProps, D3Props} from '../../types'
 
@@ -20,15 +20,13 @@ interface LivePriceProps {
   low: string
   close: string
   volume: string
+  openTime: number
 }
 
 const BASE_ENDPOINT = 'wss://stream.binance.com:9443'
 
-const downColor = '#f6465d'
-const upColor = '#0ecb81'
-
-const svgWidth = 1280
-const svgHeight = 600
+const svgWidth = window.innerWidth * 0.7
+const svgHeight = window.innerHeight - 100
 
 const margin = {
   top: 20,
@@ -42,19 +40,18 @@ const innerHeight = svgHeight - margin.top - margin.bottom
 
 const LivePrice = (props: {y: number, price: number, up: boolean}) => {
   const {y, price, up} = props
-  console.log(y,price);
   
   return <g transform={`translate(${innerWidth}, ${y})`}>
-    <rect x={5} width={40} height={20} fill={up ? upColor : downColor}></rect>
+    <rect x={5} width={50} height={20} fill={up ? upColor : downColor}></rect>
     <text
       fill={up ? '#000000' : '#FFFFFF'}
-      x={7}
+      x={5}
       dy={13}
       style={{fontSize: '10px'}}
     >{+price.toFixed(2)}</text>
     <line
-      x1={0}
-      x2={-innerWidth}
+      x1={3}
+      x2={-innerWidth + 10}
       strokeWidth={1}
       stroke={up ? upColor : downColor}
       strokeDasharray={3}
@@ -62,10 +59,9 @@ const LivePrice = (props: {y: number, price: number, up: boolean}) => {
   </g>
 }
 
-const TradingView = ({data, timeperiod, symbol}: {data: any, timeperiod: string, symbol: string}) => {
+const TradingView = ({data, timeperiod, symbol}: {data?: any, timeperiod: string, symbol: string}) => {
 
   const {connect} = useWebsocketContext()
-
   const kline = getKlineObj(data)
   const newestPrice = kline[kline.length - 1]
   const domain = getDomain(kline)
@@ -75,7 +71,8 @@ const TradingView = ({data, timeperiod, symbol}: {data: any, timeperiod: string,
     high: +newestPrice.high,
     low: +newestPrice.low,
     close: +newestPrice.close,
-    color: newestPrice.open > newestPrice.close ? "#f6465d" : "#0ecb81"
+    color: newestPrice.open > newestPrice.close ? "#f6465d" : "#0ecb81",
+    openTime: newestPrice.openTime
   })
 
   const [livePrice, setLivePrice] = useState<LivePriceProps>({
@@ -83,7 +80,8 @@ const TradingView = ({data, timeperiod, symbol}: {data: any, timeperiod: string,
     high: '0',
     low: '0',
     close: '0',
-    volume: '0'
+    volume: '0',
+    openTime: 0
   })
 
   const [mouseCoords, setMouseCoords] = useState({
@@ -121,14 +119,15 @@ const TradingView = ({data, timeperiod, symbol}: {data: any, timeperiod: string,
         high: obj.k.h,
         low: obj.k.l,
         close: obj.k.c,
-        volume: obj.k.v
+        volume: obj.k.v,
+        openTime: obj.k.t
       })
     }
 
     return () => {
       ws.close()
     }
-  }, [])
+  }, [timeperiod, symbol])
 
   return <div>
     <div className={'relative'}>
@@ -136,9 +135,9 @@ const TradingView = ({data, timeperiod, symbol}: {data: any, timeperiod: string,
         price={priceList}
       />
     <svg
-      width={svgWidth} 
+      width={'100%'}
       height={svgHeight} 
-      className="pt-[50px] px-[10px] mg-[auto]"
+      className="px-[5px] mg-[auto]"
       style={{backgroundColor: "#000000"}
     }>
     {
@@ -213,7 +212,7 @@ const TradingView = ({data, timeperiod, symbol}: {data: any, timeperiod: string,
       x={mouseCoords.x}
       y={mouseCoords.y}
       innerWidth={innerWidth}
-      innerHeight={innerHeight}
+      innerHeight={svgHeight}
     />
   </svg>
   </div>

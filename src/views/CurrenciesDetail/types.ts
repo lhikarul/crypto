@@ -5,7 +5,8 @@ export interface PriceProps {
   high: number | string
   low: number | string
   close: number | string
-  color: string
+  color: string,
+  openTime: number
 }
 
 export interface D3Props {

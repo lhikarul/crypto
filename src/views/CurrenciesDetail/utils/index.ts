@@ -33,5 +33,8 @@ export const getKlineObj = (data: any[]): KlineProps[] => {
 }
 
 export const getDomain = (kline: KlineProps[]) : [number, number] => {
-  return [Math.min(...kline.map((item) => +item.low)), Math.max(...kline.map(item => +item.high))]
+  return [Math.min(...kline.map((item) => +item.low)), Math.max(...kline.map(item => +item.high)) * 1.005]
 }
+
+export const downColor = '#f6465d'
+export const upColor = '#0ecb81'

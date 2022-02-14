@@ -7,6 +7,7 @@ import TrendLine from '../../components/TrendLine'
 
 import style from './currencyList.module.scss'
 
+export const filterCoinList = ['USDT','HEX','USDC', 'BUSD','BIT','UST','WBTC','DAI','CRO']
 interface Currency {
   uuid: string,
   price: number,
@@ -22,14 +23,12 @@ interface Currency {
 
 const CurrencyList = () => {
   const navigate = useNavigate()
-  const {data: cryptoData, isFetching} = useGetCryptosQuery(10)
+  const {data: cryptoData, isFetching} = useGetCryptosQuery(30)
   const [cryptoList, setCryptoList] = useState(cryptoData?.data?.coins)
-  const [searchTerm, setsearchTerm] = useState('')
-
+  
   useEffect(() => {
-    setCryptoList(cryptoData?.data?.coins)
-    // const filteredData = cryptosList?.data?.coins.filter((coin: {name: string}) => coin.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    // setCryptos(filteredData)
+    const filteredData = cryptoData?.data?.coins.filter((coin: {symbol: string}) => !filterCoinList.includes(coin.symbol))
+    setCryptoList(filteredData)
   }, [cryptoData?.data?.coins])
 
   if (isFetching) return <div>loading...</div>
@@ -46,13 +45,14 @@ const CurrencyList = () => {
             <th>Market Cap</th>
             <th>Volume(24h)</th>
             <th>trend</th>
+            <th>trade</th>
           </tr>
         </thead>
         <tbody>
           {
-            cryptoList?.map((crypto: Currency) => (
-              <tr key={crypto.uuid}>
-                <td>{crypto.rank}</td>
+            cryptoList?.map((crypto: Currency, index: number) => (
+              <tr key={crypto.uuid} className='cursor-pointer'>
+                <td>{index + 1}</td>
                 <td className="cursor-pointer" onClick={() => navigate(`/currencies/${crypto.symbol}/${crypto.uuid}`)}>
                   <img className='w-[24px] h-[24px] mr-[5px] inline' src={crypto.iconUrl} />
                   <span>{crypto.name}</span> <span className="ml-[3px] text-[#808a9d]">{crypto.symbol}</span>
@@ -65,6 +65,9 @@ const CurrencyList = () => {
                   <TrendLine 
                     data={crypto.sparkline}
                   />
+                </td>
+                <td>
+                  交易
                 </td>
               </tr>
             ))

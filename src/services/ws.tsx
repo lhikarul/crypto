@@ -1,5 +1,7 @@
 import { createContext, useContext, useRef } from "react";
 
+export const BINANCE_WS_BASE_POINT = 'wss://stream.binance.com:9443'
+
 const initState = {
   connect: (url: string) => new WebSocket(url)
 }

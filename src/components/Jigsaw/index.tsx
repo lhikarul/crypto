@@ -277,7 +277,7 @@ export default function Jigsaw (props: JigsawProps) {
         onMouseUp={onMoveEnd}
       >
         <div
-          className={"ml-[55px] bg-[#2b3139]"}
+          className={"ml-[55px]"}
         >
           滑動以完成拼圖
         </div>
